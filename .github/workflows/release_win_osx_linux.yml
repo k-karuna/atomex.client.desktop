@@ -65,11 +65,11 @@ jobs:
         with:
           dotnet-version: 5.0.403
 
-      - name: Run Linux build script
-        env:
-          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
-          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
-        run: ./build_linux.sh
+#      - name: Run Linux build script
+#        env:
+#          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+#          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
+#        run: ./build_linux.sh
 
       - name: Upload Linux release artifacts
         uses: actions/upload-artifact@v2
@@ -139,4 +139,4 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
-          files: dist/*
+#          files: dist/*
