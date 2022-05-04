@@ -24,28 +24,28 @@ jobs:
       - name: Restore NuGet Packages
         run: nuget restore Atomex.Client.Desktop.sln
 
-      - name: Create Code Signing Certificate
-        run: |
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WINDOWS_CERT_PFX_BASE64 }}'
-          certutil -decode certificate\certificate.txt certificate\certificate.pfx
+#      - name: Create Code Signing Certificate
+#        run: |
+#          New-Item -ItemType directory -Path certificate
+#          Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WINDOWS_CERT_PFX_BASE64 }}'
+#          certutil -decode certificate\certificate.txt certificate\certificate.pfx
 
       - name: Build Desktop app
         run: dotnet publish Atomex.Client.Desktop.csproj -c Release -r win-x64
 
-      - name: Sign builded artifacts
-        run: |
-          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /f certificate\certificate.pfx /p '${{ secrets.WINDOWS_CERT_PFX_PASS }}' /t http://timestamp.comodoca.com/authenticode bin\Release\net5.0\win-x64\publish\Atomex.Client.Core.dll
-          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /f certificate\certificate.pfx /p '${{ secrets.WINDOWS_CERT_PFX_PASS }}' /t http://timestamp.comodoca.com/authenticode bin\Release\net5.0\win-x64\publish\Atomex.Client.Desktop.dll
-          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /f certificate\certificate.pfx /p '${{ secrets.WINDOWS_CERT_PFX_PASS }}' /t http://timestamp.comodoca.com/authenticode bin\Release\net5.0\win-x64\publish\Atomex.Client.Desktop.exe
+#      - name: Sign builded artifacts
+#        run: |
+#          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /f certificate\certificate.pfx /p '${{ secrets.WINDOWS_CERT_PFX_PASS }}' /t http://timestamp.comodoca.com/authenticode bin\Release\net5.0\win-x64\publish\Atomex.Client.Core.dll
+#          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /f certificate\certificate.pfx /p '${{ secrets.WINDOWS_CERT_PFX_PASS }}' /t http://timestamp.comodoca.com/authenticode bin\Release\net5.0\win-x64\publish\Atomex.Client.Desktop.dll
+#          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /f certificate\certificate.pfx /p '${{ secrets.WINDOWS_CERT_PFX_PASS }}' /t http://timestamp.comodoca.com/authenticode bin\Release\net5.0\win-x64\publish\Atomex.Client.Desktop.exe
           
       - name: Build Desktop app .msi installer
         run: MSBuild Atomex.Client.Desktop.Installer/Atomex.Client.Desktop.Installer.wixproj /p:Configuration=Release /p:RuntimeIdentifiers=win-x64 /clp:ErrorsOnly
         
-      - name: Sign MSI installer
-        run: |
-          $version=(git describe --tags --abbrev=0)
-          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /f certificate\certificate.pfx /p '${{ secrets.WINDOWS_CERT_PFX_PASS }}' /t http://timestamp.comodoca.com/authenticode "Atomex.Client.Desktop.Installer\Installs\Atomex.Client-$version.0-x64.msi"
+#      - name: Sign MSI installer
+#        run: |
+#          $version=(git describe --tags --abbrev=0)
+#          & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe" sign /f certificate\certificate.pfx /p '${{ secrets.WINDOWS_CERT_PFX_PASS }}' /t http://timestamp.comodoca.com/authenticode "Atomex.Client.Desktop.Installer\Installs\Atomex.Client-$version.0-x64.msi"
           
       - name: Upload windows release artifacts
         uses: actions/upload-artifact@v2
@@ -92,29 +92,29 @@ jobs:
         with:
           dotnet-version: 5.0.100
 
-      - name: Create keychain for codesign
-        env:
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-          MACOS_NOTARIZE_PWD: ${{ secrets.MACOS_NOTARIZE_PWD }}
-        run: |
-          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
-          security create-keychain -p $MACOS_CERTIFICATE_PWD atomex.build.keychain
-          security default-keychain -s atomex.build.keychain
-          security unlock-keychain -p $MACOS_CERTIFICATE_PWD atomex.build.keychain
-          security import certificate.p12 -k atomex.build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $MACOS_CERTIFICATE_PWD atomex.build.keychain
-          echo 'VER='$(xmllint --xpath "/*[local-name() = 'Project']/*[local-name() = 'PropertyGroup']/*[local-name() = 'Version']/text()" Atomex.Client.Desktop.csproj) >> $GITHUB_ENV
+#      - name: Create keychain for codesign
+#        env:
+#          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+#          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+#          MACOS_NOTARIZE_PWD: ${{ secrets.MACOS_NOTARIZE_PWD }}
+#        run: |
+#          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+#          security create-keychain -p $MACOS_CERTIFICATE_PWD atomex.build.keychain
+#          security default-keychain -s atomex.build.keychain
+#          security unlock-keychain -p $MACOS_CERTIFICATE_PWD atomex.build.keychain
+#          security import certificate.p12 -k atomex.build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
+#          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $MACOS_CERTIFICATE_PWD atomex.build.keychain
+#          echo 'VER='$(xmllint --xpath "/*[local-name() = 'Project']/*[local-name() = 'PropertyGroup']/*[local-name() = 'Version']/text()" Atomex.Client.Desktop.csproj) >> $GITHUB_ENV
 
-      - name: Run Macos build bash script
-        env:
-          MACOS_NOTARIZE_PWD: ${{ secrets.MACOS_NOTARIZE_PWD }}
-          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
-          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
-          VER: ${{ env.VER }}
-        run: |
-          npm install --global create-dmg
-          ./build_osx.sh $MACOS_NOTARIZE_PWD
+#      - name: Run Macos build bash script
+#        env:
+#          MACOS_NOTARIZE_PWD: ${{ secrets.MACOS_NOTARIZE_PWD }}
+#          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+#          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
+#          VER: ${{ env.VER }}
+#        run: |
+#          npm install --global create-dmg
+#          ./build_osx.sh $MACOS_NOTARIZE_PWD
 
       - name: Download Windows articact files
         uses: actions/download-artifact@v2
@@ -122,12 +122,12 @@ jobs:
           name: atomex-win
           path: dist/
 
-      - name: Create appcast file for Windows .msi installer
-        env:
-          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
-          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
-          VER: ${{ env.VER }}
-        run: ./create_msi_appcast.sh
+#      - name: Create appcast file for Windows .msi installer
+#        env:
+#          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+#          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
+#          VER: ${{ env.VER }}
+#        run: ./create_msi_appcast.sh
         
       - name: Download Linux release files
         uses: actions/download-artifact@v2
